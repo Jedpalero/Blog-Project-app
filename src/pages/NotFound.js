@@ -1,7 +1,11 @@
 import React from "react";
 
 const NotFound = () => {
-  return <div>NotFound</div>;
+  return (
+    <div>
+      <img src="./images/404-2.jpg" alt="Page not found" />
+    </div>
+  );
 };
 
 export default NotFound;

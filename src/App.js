@@ -49,7 +49,7 @@ function App() {
       />
       <ToastContainer position="top-center" />
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Home setActive={setActive} user={user} />} />
         <Route path="/detail/:id" element={<Detail setActive={setActive} />} />
         <Route
           path="/create"
@@ -60,11 +60,18 @@ function App() {
         <Route
           path="/update/:id"
           element={
-            user?.uid ? <AddEditBlog user={user} /> : <Navigate to="/" />
+            user?.uid ? (
+              <AddEditBlog user={user} setActive={setActive} />
+            ) : (
+              <Navigate to="/" />
+            )
           }
         />
         <Route path="/about" element={<About />} />
-        <Route path="/auth" element={<Auth setActive={setActive} />} />
+        <Route
+          path="/auth"
+          element={<Auth setActive={setActive} setUser={setUser} />}
+        />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>

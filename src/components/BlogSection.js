@@ -3,7 +3,8 @@ import FontAwesome from "react-fontawesome";
 import { excerpt } from "../utility";
 import { Link } from "react-router-dom";
 
-const BlogSection = ({ blogs, user }) => {
+const BlogSection = ({ blogs, user, handleDelete }) => {
+  const userId = user?.uid;
   return (
     <div>
       <div className="blog-heading text-start py-2 mb-4">Daily Logs</div>
@@ -30,20 +31,25 @@ const BlogSection = ({ blogs, user }) => {
               {excerpt(item.description, 120)}
             </div>
             <Link to={`/detail/${item.id}`}>
-              <buttton className="btn btn-read">Read More</buttton>
+              <button className="btn btn-read">Read More</button>
             </Link>
-            <div style={{ float: "right" }}>
-              <FontAwesome
-                name="trash"
-                style={{ margin: "15px", cursor: "pointer" }}
-                size="2x"
-              />
-              <FontAwesome
-                name="edit"
-                style={{ cursor: "pointer" }}
-                size="2x"
-              />
-            </div>
+            {userId && item.userId === userId && (
+              <div style={{ float: "right" }}>
+                <FontAwesome
+                  name="trash"
+                  style={{ margin: "15px", cursor: "pointer" }}
+                  size="2x"
+                  onClick={() => handleDelete(item.id)}
+                />
+                <Link to={`/update/${item.id}`}>
+                  <FontAwesome
+                    name="edit"
+                    style={{ cursor: "pointer" }}
+                    size="2x"
+                  />
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       ))}
