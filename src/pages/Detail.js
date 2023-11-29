@@ -1,10 +1,13 @@
 import {
+  Timestamp,
   collection,
   doc,
   getDoc,
   getDocs,
   limit,
   query,
+  serverTimestamp,
+  updateDoc,
   where,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
@@ -13,12 +16,19 @@ import { db } from "../firebase";
 import Tags from "../components/Tags";
 import MostPopular from "../components/MostPopular";
 import RelatedBlog from "../components/RelatedBlog";
+import { isEmpty } from "lodash";
+import UserComments from "../components/UserComments";
+import CommentBox from "../components/CommentBox";
+import { toast } from "react-toastify";
 
-const Detail = ({ setActive }) => {
+const Detail = ({ setActive, user }) => {
+  const userId = user?.uid;
   const { id } = useParams();
   const [blog, setBlog] = useState(null);
   const [blogs, setBlogs] = useState(null);
   const [tags, setTags] = useState(null);
+  const [comments, setComments] = useState([]);
+  const [userComment, setUserComment] = useState("");
   const [relatedBlogs, setRelatedBlogs] = useState([]);
 
   useEffect(() => {
@@ -48,6 +58,7 @@ const Detail = ({ setActive }) => {
       blogRef,
       where("tags", "array-contains-any", blogDetail.data().tags, limit(3))
     );
+    setComments(blogDetail.data().comments ? blogDetail.data().comments : []);
     const relatedBlogSnapshot = await getDocs(relatedBlogsQuery);
     const relatedBlogs = [];
     relatedBlogSnapshot.forEach((doc) => {
@@ -55,6 +66,24 @@ const Detail = ({ setActive }) => {
     });
     setRelatedBlogs(relatedBlogs);
     setActive(null);
+  };
+
+  const handleComment = async (e) => {
+    e.preventDefault();
+    comments.push({
+      createdAt: Timestamp.fromDate(new Date()),
+      userId,
+      name: user?.displayName,
+      body: userComment,
+    });
+    toast.success("Comment posted successfully");
+    await updateDoc(doc(db, "blogs", id), {
+      ...blog,
+      comments,
+      timestamp: serverTimestamp(),
+    });
+    setComments(comments);
+    setUserComment("");
   };
 
   return (
@@ -81,6 +110,29 @@ const Detail = ({ setActive }) => {
               <div className="text-start">
                 <Tags tags={blog?.tags} />
               </div>
+              <br />
+              <div className="custombox">
+                <h4 className="small-title">{comments?.length} Comment</h4>
+                {isEmpty(comments) ? (
+                  <UserComments
+                    msg={
+                      "No Comment yet posted on this blog. Be the first to comment"
+                    }
+                  />
+                ) : (
+                  <>
+                    {comments?.map((comment) => (
+                      <UserComments {...comment} />
+                    ))}
+                  </>
+                )}
+              </div>
+              <CommentBox
+                userId={userId}
+                userComment={userComment}
+                setUserComment={setUserComment}
+                handleComment={handleComment}
+              />
             </div>
             <div className="col-md-3">
               <div className="blog-heading text-start py-2 mb-4">Tags</div>
