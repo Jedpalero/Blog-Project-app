@@ -1,15 +1,25 @@
-import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  limit,
+  query,
+  where,
+} from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { db } from "../firebase";
 import Tags from "../components/Tags";
 import MostPopular from "../components/MostPopular";
+import RelatedBlog from "../components/RelatedBlog";
 
 const Detail = ({ setActive }) => {
   const { id } = useParams();
   const [blog, setBlog] = useState(null);
   const [blogs, setBlogs] = useState(null);
   const [tags, setTags] = useState(null);
+  const [relatedBlogs, setRelatedBlogs] = useState([]);
 
   useEffect(() => {
     const getBlogsData = async () => {
@@ -30,11 +40,23 @@ const Detail = ({ setActive }) => {
   }, [id]);
 
   const getBlogDetail = async () => {
+    const blogRef = collection(db, "blogs");
     const docRef = doc(db, "blogs", id);
     const blogDetail = await getDoc(docRef);
     setBlog(blogDetail.data());
+    const relatedBlogsQuery = query(
+      blogRef,
+      where("tags", "array-contains-any", blogDetail.data().tags, limit(3))
+    );
+    const relatedBlogSnapshot = await getDocs(relatedBlogsQuery);
+    const relatedBlogs = [];
+    relatedBlogSnapshot.forEach((doc) => {
+      relatedBlogs.push({ id: doc.id, ...doc.data() });
+    });
+    setRelatedBlogs(relatedBlogs);
     setActive(null);
   };
+
   return (
     <div className="single">
       <div
@@ -56,12 +78,17 @@ const Detail = ({ setActive }) => {
                 {blog?.timestamp.toDate().toDateString()}
               </span>
               <p className="text-start">{blog?.description}</p>
+              <div className="text-start">
+                <Tags tags={blog?.tags} />
+              </div>
             </div>
             <div className="col-md-3">
+              <div className="blog-heading text-start py-2 mb-4">Tags</div>
               <Tags tags={tags} />
               <MostPopular blogs={blogs} />
             </div>
           </div>
+          <RelatedBlog id={id} blogs={relatedBlogs} />
         </div>
       </div>
     </div>
