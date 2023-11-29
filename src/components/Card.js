@@ -2,7 +2,7 @@ import React from "react";
 import { excerpt } from "../utility";
 import { Link } from "react-router-dom";
 
-const Card = ({ title, description, imgUrl, id }) => {
+const Card = ({ title, description, imgUrl, id, likes, comments }) => {
   return (
     <div className="col-sm-6 col-lg-4 mb-5">
       <div className="related-content card text-description-none overflow-hidden h-100">
@@ -16,13 +16,18 @@ const Card = ({ title, description, imgUrl, id }) => {
             <Link
               to={`/detail/${id}`}
               style={{ textDecoration: "none" }}
-              onClick={() => {
-                window.scroll({ top: 0, left: 0, behavior: "smooth" }); // Clink the Link and route to the top of the page;
-              }}
+              // onClick={() => {
+              //   window.scroll({ top: 0, left: 0, behavior: "smooth" }); // Clink the Link and route to the top of the page;
+              // }}
             >
               <span className="text-primary">Read More</span>
             </Link>
-            <div>{/* Show like & comment count */}</div>
+            <div>
+              <i className="bi bi-hand-thumbs-up m-2" />
+              {likes.length}
+              <i className="bi bi-chat-left m-2" />
+              {comments.length}
+            </div>
           </div>
         </div>
       </div>
