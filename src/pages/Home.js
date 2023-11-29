@@ -3,9 +3,12 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  limit,
   onSnapshot,
   query,
+  orderBy,
   where,
+  startAfter,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { db } from "../firebase";
@@ -16,7 +19,7 @@ import Tags from "../components/Tags";
 import MostPopular from "../components/MostPopular";
 import Trending from "../components/Trending";
 import Search from "../components/Search";
-import { isEmpty, isNull, orderBy } from "lodash";
+import { isEmpty, isNull } from "lodash";
 import { useLocation } from "react-router-dom";
 
 function useQuery() {
@@ -28,7 +31,9 @@ const Home = ({ setActive, user, active }) => {
   const [blogs, setBlogs] = useState([]);
   const [tags, setTags] = useState([]);
   const [search, setSearch] = useState("");
+  const [lastVisible, setLastVisible] = useState(null);
   const [trendBlogs, setTrendBlogs] = useState([]);
+  const [hide, setHide] = useState(false);
   const queryString = useQuery();
   const searchQuery = queryString.get("searchQuery");
   const location = useLocation();
@@ -58,7 +63,7 @@ const Home = ({ setActive, user, active }) => {
         });
         const uniqueTags = [...new Set(tags)];
         setTags(uniqueTags);
-        setBlogs(list);
+        // setBlogs(list);
         setLoading(false);
         setActive("home");
       },
@@ -72,6 +77,48 @@ const Home = ({ setActive, user, active }) => {
       getTrendingBlogs();
     };
   }, [setActive, active]);
+
+  const getBlogs = async () => {
+    const blogRef = collection(db, "blogs");
+    const firstFour = query(blogRef, orderBy("title"), limit(4));
+    const docSnapshot = await getDocs(firstFour);
+    setBlogs(docSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    setLastVisible(docSnapshot.docs[docSnapshot.docs.length - 1]);
+  };
+
+  const updateState = (docSnapshot) => {
+    const isCollectionEmpty = docSnapshot.size === 0;
+    if (!isCollectionEmpty) {
+      const blogsData = docSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setBlogs((blogs) => [...blogs, ...blogsData]);
+      setLastVisible(docSnapshot.docs[docSnapshot.docs.length - 1]);
+    } else {
+      toast.info("No more blog to display");
+      setHide(true);
+    }
+  };
+
+  const fetchMore = async () => {
+    setLoading(true);
+    const blogRef = collection(db, "blogs");
+    const nextFour = query(
+      blogRef,
+      orderBy("title"),
+      limit(4),
+      startAfter(lastVisible)
+    );
+    const docSnapshot = await getDocs(nextFour);
+    updateState(docSnapshot);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    getBlogs();
+    setHide(false);
+  }, [active]);
 
   const searchBlogs = async () => {
     const blogRef = collection(db, "blogs");
@@ -92,6 +139,7 @@ const Home = ({ setActive, user, active }) => {
     });
     const combinedSearchBlogs = searchTitleBlogs.concat(searchTagBlogs);
     setBlogs(combinedSearchBlogs);
+    setHide(true);
     setActive("");
   };
 
@@ -118,16 +166,11 @@ const Home = ({ setActive, user, active }) => {
     }
   };
 
-  const getBlogs = async () => {
-    const blogRef = collection(db, "blogs");
-    const docSnapshot = await getDocs(blogRef);
-    setBlogs(docSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-  };
-
   const handleChange = (e) => {
     const { value } = e.target;
     if (isEmpty(value)) {
       getBlogs();
+      setHide(false);
     }
     setSearch(value);
   };
@@ -152,6 +195,11 @@ const Home = ({ setActive, user, active }) => {
               user={user}
               handleDelete={handleDelete}
             />
+            {!hide && (
+              <button className="btn btn-primary" onClick={fetchMore}>
+                Load More
+              </button>
+            )}
           </div>
           <div className="col-md-3">
             <Search search={search} handleChange={handleChange} />
