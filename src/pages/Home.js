@@ -190,11 +190,14 @@ const Home = ({ setActive, user, active }) => {
                 </h4>
               </>
             )}
-            <BlogSection
-              blogs={blogs}
-              user={user}
-              handleDelete={handleDelete}
-            />
+            {blogs?.map((blog) => (
+              <BlogSection
+                key={blog.id}
+                user={user}
+                handleDelete={handleDelete}
+                {...blog}
+              />
+            ))}
             {!hide && (
               <button className="btn btn-primary" onClick={fetchMore}>
                 Load More

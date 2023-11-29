@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import Auth from "./pages/Auth";
 import { auth } from "./firebase";
 import { signOut } from "firebase/auth";
+import TagBlog from "./pages/TagBlog";
 
 function App() {
   const [active, setActive] = useState("home");
@@ -74,6 +75,7 @@ function App() {
             )
           }
         />
+        <Route path="/tag/:tag" element={<TagBlog />} />
         <Route path="/about" element={<About />} />
         <Route
           path="/auth"
