@@ -6,14 +6,14 @@ const FeatureBlogs = ({ blogs, title }) => {
   return (
     <div>
       <div className="blog-heading text-start pt-3 py-2 mb-4">{title}</div>
-      {blogs?.map((item) => (
+      {blogs?.map((item, index) => (
         <div
           className="row pb-3"
           key={item.id}
           style={{ cursor: "pointer" }}
           onClick={() => navigate(`/detail/${item.id}`)}
         >
-          <div className="col-5 align-self-center">
+          <div className="col-5 align-self-center" key={index}>
             <img
               src={item.imgUrl}
               alt={item.title}

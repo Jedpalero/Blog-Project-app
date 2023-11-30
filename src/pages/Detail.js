@@ -161,8 +161,8 @@ const Detail = ({ setActive, user }) => {
                     />
                   ) : (
                     <>
-                      {comments?.map((comment) => (
-                        <UserComments {...comment} />
+                      {comments?.map((comment, index) => (
+                        <UserComments {...comment} key={index} />
                       ))}
                     </>
                   )}

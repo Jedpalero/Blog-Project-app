@@ -6,7 +6,7 @@ const Tags = ({ tags }) => {
     <div>
       <div className="tags">
         {tags?.map((tag, index) => (
-          <p className="tag" key={index}>
+          <p className="tag shadow-sm rounded" key={index}>
             <Link
               to={`/tag/${tag}`}
               style={{ textDecoration: "none", color: "black" }}

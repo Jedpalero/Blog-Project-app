@@ -5,7 +5,7 @@ import BlogSection from "../components/BlogSection";
 import { db } from "../firebase";
 import Spinner from "../components/Spinner";
 
-const TagBlog = () => {
+const TagBlog = ({ setActive }) => {
   const [tagBlogs, setTagBlogs] = useState([]);
   const [loading, setLoading] = useState(false);
   const { tag } = useParams();
@@ -25,6 +25,8 @@ const TagBlog = () => {
 
   useEffect(() => {
     getTagBlogs();
+    setActive(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (loading) {
@@ -38,8 +40,8 @@ const TagBlog = () => {
           <div className="blog-heading text-center py-2 mb-4">
             Tag: <strong>{tag.toLocaleUpperCase()}</strong>
           </div>
-          {tagBlogs?.map((item) => (
-            <div className="col-md-6">
+          {tagBlogs?.map((item, index) => (
+            <div className="col-md-6" key={index}>
               <BlogSection key={item.id} {...item} />
             </div>
           ))}

@@ -30,6 +30,7 @@ function useQuery() {
 const Home = ({ setActive, user, active }) => {
   const [loading, setLoading] = useState(true);
   const [blogs, setBlogs] = useState([]);
+  const [mostPopularBlogs, setMostPopularBlogs] = useState([]);
   const [tags, setTags] = useState([]);
   const [search, setSearch] = useState("");
   const [lastVisible, setLastVisible] = useState(null);
@@ -86,6 +87,9 @@ const Home = ({ setActive, user, active }) => {
     const firstFour = query(blogRef, orderBy("title"), limit(4));
     const docSnapshot = await getDocs(firstFour);
     setBlogs(docSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    setMostPopularBlogs(
+      docSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+    );
     setLastVisible(docSnapshot.docs[docSnapshot.docs.length - 1]);
   };
 
@@ -105,7 +109,7 @@ const Home = ({ setActive, user, active }) => {
   };
 
   const fetchMore = async () => {
-    setLoading(true);
+    // setLoading(true);
     const blogRef = collection(db, "blogs");
     const nextFour = query(
       blogRef,
@@ -115,7 +119,7 @@ const Home = ({ setActive, user, active }) => {
     );
     const docSnapshot = await getDocs(nextFour);
     updateState(docSnapshot);
-    setLoading(false);
+    // setLoading(false);
   };
 
   useEffect(() => {
@@ -150,6 +154,7 @@ const Home = ({ setActive, user, active }) => {
     if (!isNull(searchQuery)) {
       searchBlogs();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
   if (loading) {
@@ -162,6 +167,7 @@ const Home = ({ setActive, user, active }) => {
         setLoading(true);
         await deleteDoc(doc(db, "blogs", id));
         toast.success("Blog deleted successfully");
+        getBlogs();
         setLoading(false);
       } catch (err) {
         console.log(err);
@@ -196,8 +202,6 @@ const Home = ({ setActive, user, active }) => {
     };
   });
 
-  console.log("categoryCount", categoryCount);
-
   return (
     <div className="container-fluid pb-4 pt-4 padding">
       <div className="container padding">
@@ -222,7 +226,7 @@ const Home = ({ setActive, user, active }) => {
               />
             ))}
             {!hide && (
-              <button className="btn btn-primary" onClick={fetchMore}>
+              <button className="btn btn-primary mt-3" onClick={fetchMore}>
                 Load More
               </button>
             )}
@@ -231,7 +235,7 @@ const Home = ({ setActive, user, active }) => {
             <Search search={search} handleChange={handleChange} />
             <div className="blog-heading text-start py-2 mb-4">Tags</div>
             <Tags tags={tags} />
-            <FeatureBlogs title={"Most Popular"} blogs={blogs} />
+            <FeatureBlogs title={"Most Popular"} blogs={mostPopularBlogs} />
             <Category catgBlogsCount={categoryCount} />
           </div>
         </div>
