@@ -675,3 +675,21 @@ color: #777;
 	overflow-y: auto;
 	text-align:justify;
 }
+
+// About
+.text-header {
+	margin: 30px;
+	border-bottom: 1px solid #777;
+	text-align: left!important;
+}
+
+.text {
+	justify-content: center;
+}
+
+.footer-bottom {
+	position: absolute;
+  bottom: 0;
+	font-size: 0.8rem;
+	margin-left: 300px;
+}
